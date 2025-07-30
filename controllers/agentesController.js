@@ -19,7 +19,7 @@ const dataLimiteIncorporacao = '1900-01-01';
 function getAllAgentes(req, res) {
     let agentes = agentesRepository.findAll();
     
-    if (agentes && agentes != []) {
+    if (agentes && agentes.length > 0) {
         if (req.query) {
             if (req.query['cargo']) {
                 agentes = agentes.filter(  (agente) => (agente.cargo === req.query.cargo.toLowerCase())  );

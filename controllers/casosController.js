@@ -17,7 +17,7 @@ const agentes         = require("../repositories/agentesRepository");
 
 function getAllCasos(req, res) {
     let casos = casosRepository.findAll();
-    if (casos && casos != []) {
+    if (casos && casos.length > 0) {
         if (req.query) {
             if (req.query['agente_id']) {
                 casos = casos.filter(  (caso) => (caso.agente_id === req.query.agente_id)  );
