@@ -12,7 +12,9 @@ Aq vamos apenas ignorar o campo "blablba" e seguir em frente, fingir q ele nao e
 */
 
 const agentesRepository = require("../repositories/agentesRepository");
-const utils           = require("../utils/errorHandler");
+const utils             = require("../utils/errorHandler");
+
+const { v4: gerarUUID, validate: validarUUID } = require('uuid');
 
 const dataLimiteIncorporacao = '1900-01-01';
 
@@ -22,7 +24,7 @@ function getAllAgentes(req, res) {
     if (agentes && agentes.length > 0) {
         if (req.query) {
             if (req.query['cargo']) {
-                agentes = agentes.filter(  (agente) => (agente.cargo === req.query.cargo.toLowerCase())  );
+                agentes = agentes.filter(  (agente) => (agente.cargo.toLowerCase() === req.query.cargo.toLowerCase())  );
             }
             if (req.query['sort']) {
                 if (req.query['sort'] === 'dataDeIncorporacao') { // do mais antigo pro mais novo
@@ -56,7 +58,7 @@ function getAllAgentes(req, res) {
 
 function getAgenteById(req, res) {
     const agenteInfo = agentesRepository.findAgenteById(req.params.id);
-    if (! utils.verificarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+    if (! validarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -82,7 +84,7 @@ function getAgenteById(req, res) {
 }
 
 function cadastrarAgente(req, res) {
-    const camposEsperados = ['id', 'nome', 'dataDeIncorporacao', 'cargo'];
+    const camposEsperados = ['nome', 'dataDeIncorporacao', 'cargo'];
     const camposRecebidos = Object.keys(req.body);
     let   camposFaltantes = [];
     
@@ -101,15 +103,19 @@ function cadastrarAgente(req, res) {
         ));
     }
     
-    const {id, nome, dataDeIncorporacao, cargo} = req.body;
+    let {id, nome, dataDeIncorporacao, cargo} = req.body;
 
-    if (! utils.verificarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
-        return res.status(400).json(utils.montarResposta(
-            "400",
-            "Erro",
-            null,
-            "id do agente precisa seguir formato UUID"
-        ));
+    if (id) { // o cliente informou o UUID no body da requisição
+        if (! validarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+            return res.status(400).json(utils.montarResposta(
+                "400",
+                "Erro",
+                null,
+                "id do agente precisa seguir formato UUID"
+            ));
+        }
+    } else { // nao informou o UUID entao vamos gerar um
+        id = gerarUUID();
     }
 
     if (agentesRepository.findAgenteById(id)) {
@@ -223,7 +229,7 @@ function atualizarAgenteCompleto(req, res) {
         ));
     }
     
-    const {id, nome, dataDeIncorporacao, cargo} = req.body;
+    let {id, nome, dataDeIncorporacao, cargo} = req.body;
 
     if (id && id !== req.params.id) { // o ID não é obrigatorio ja que ja informamos ele na url mas se for informado deve ser igual ao da url
         return res.status(400).json(utils.montarResposta(
@@ -337,7 +343,7 @@ function atualizarAgenteParcial(req, res) {
         return res.status(204).end();
     }
     
-    const {id, nome, dataDeIncorporacao, cargo} = req.body;
+    let {id, nome, dataDeIncorporacao, cargo} = req.body;
 
     if (id && id !== req.params.id) { // o ID não é obrigatorio ja que ja informamos ele na url mas se for informado deve ser igual ao da url
         return res.status(400).json(utils.montarResposta(

@@ -15,6 +15,8 @@ const casosRepository = require("../repositories/casosRepository");
 const utils           = require("../utils/errorHandler");
 const agentes         = require("../repositories/agentesRepository");
 
+const { v4: gerarUUID, validate: validarUUID } = require('uuid');
+
 function getAllCasos(req, res) {
     let casos = casosRepository.findAll();
     if (casos && casos.length > 0) {
@@ -23,7 +25,7 @@ function getAllCasos(req, res) {
                 casos = casos.filter(  (caso) => (caso.agente_id === req.query.agente_id)  );
             }
             if (req.query['status']) {
-                casos = casos.filter(  (caso) => (caso.status === req.query.status.toLowerCase())  );
+                casos = casos.filter(  (caso) => (caso.status.toLowerCase() === req.query.status.toLowerCase())  );
             }
         }
         if (casos) {
@@ -44,7 +46,7 @@ function getAllCasos(req, res) {
 
 function getCasoById(req, res) {
     const casoInfo = casosRepository.findCasoById(req.params.id);
-    if (! utils.verificarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+    if (! validarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -70,7 +72,7 @@ function getCasoById(req, res) {
 }
 
 function criarCaso(req, res) {
-    const camposEsperados = ['id', 'titulo', 'descricao', 'status', 'agente_id'];
+    const camposEsperados = ['titulo', 'descricao', 'status', 'agente_id'];
     const camposRecebidos = Object.keys(req.body);
     let   camposFaltantes = [];
     
@@ -89,15 +91,19 @@ function criarCaso(req, res) {
         ));
     }
     
-    const {id, titulo, descricao, status, agente_id} = req.body;
+    let {id, titulo, descricao, status, agente_id} = req.body;
 
-    if (! utils.verificarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
-        return res.status(400).json(utils.montarResposta(
-            "400",
-            "Erro",
-            null,
-            "id do caso precisa seguir formato UUID"
-        ));
+    if (id) {
+        if (! validarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+            return res.status(400).json(utils.montarResposta(
+                "400",
+                "Erro",
+                null,
+                "id do caso precisa seguir formato UUID"
+            ));
+        }
+    } else {
+        id = gerarUUID();
     }
 
     if (casosRepository.findCasoById(id)) {
@@ -109,7 +115,7 @@ function criarCaso(req, res) {
         ));
     }
     
-    if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+    if (! validarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -190,7 +196,7 @@ function atualizarCasoCompleto(req, res) {
         ));
     }
     
-    const {id, titulo, descricao, status, agente_id} = req.body;
+    let {id, titulo, descricao, status, agente_id} = req.body;
 
     if (id && id !== req.params.id) { // o ID não é obrigatorio ja que ja informamos ele na url mas se for informado deve ser igual ao da url
         return res.status(400).json(utils.montarResposta(
@@ -201,7 +207,7 @@ function atualizarCasoCompleto(req, res) {
         ));
     }
 
-    if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+    if (! validarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -284,7 +290,7 @@ function atualizarCasoParcial(req, res) {
         return res.status(204).end();
     }
     
-    const {id, titulo, descricao, status, agente_id} = req.body;
+    let {id, titulo, descricao, status, agente_id} = req.body;
 
     if (id && id !== req.params.id) { // o ID não é obrigatorio ja que ja informamos ele na url mas se for informado deve ser igual ao da url
         return res.status(400).json(utils.montarResposta(
@@ -295,7 +301,7 @@ function atualizarCasoParcial(req, res) {
         ));
     }
     if (agente_id) {
-        if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
+        if (! validarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
             return res.status(400).json(utils.montarResposta(
                 "400",
                 "Erro",
@@ -340,7 +346,7 @@ function atualizarCasoParcial(req, res) {
     let camposToUpdate = {
         "titulo": titulo,
         "descricao": descricao,
-        "status": status.toLowerCase(),
+        "status": status ? status.toLowerCase() : undefined,
         "agente_id": agente_id
     };
 
