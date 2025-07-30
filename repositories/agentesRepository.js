@@ -48,7 +48,6 @@ function deleteAgente(id) {
 module.exports = {
     findAll,
     findAgenteById,
-    findAgenteInfo,
     pushAgente,
     createAgente,
     replaceAgente,
