@@ -2,6 +2,12 @@ const express = require('express')
 const app = express();
 const PORT = 3000;
 
+// Documentação
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/swagger');
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Documentação
+
 const agentesRouter = require("./routes/agentesRoutes");
 const casosRouter   = require("./routes/casosRoutes");
 
