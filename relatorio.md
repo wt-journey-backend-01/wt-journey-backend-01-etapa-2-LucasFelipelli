@@ -1,29 +1,49 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 9 créditos restantes para usar o sistema de feedback AI.
+Você tem 8 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para LucasFelipelli:
 
-Nota final: **23.5/100**
+Nota final: **28.5/100**
 
-Olá, LucasFelipelli! 👋😊
+# Feedback para LucasFelipelli 🚓✨
 
-Primeiramente, quero parabenizá-lo pelo empenho e dedicação em construir essa API para o Departamento de Polícia! Você estruturou seu projeto com uma organização bem clara, usando rotas, controllers e repositories, o que já mostra um bom entendimento da arquitetura modular. 🎉👏
-
-Além disso, vi que você implementou corretamente os endpoints básicos para agentes e casos, cuidando das operações CRUD e até algumas validações importantes, como o formato UUID para IDs e os status HTTP adequados para várias situações. Isso é ótimo! Você também tentou implementar filtros e buscas, o que demonstra que está buscando ir além do básico. Muito bom! 🚀
+Olá Lucas! Primeiro, quero parabenizá-lo pelo esforço e pela organização do seu projeto! 🎉 Você estruturou seu código em módulos, separando rotas, controllers e repositories, o que é fundamental para manter a escalabilidade e a manutenção do projeto. Além disso, vi que você implementou várias validações importantes e tratamento de erros personalizados, o que mostra seu cuidado com a qualidade da API. Mandou bem! 👏
 
 ---
 
-# Vamos destrinchar juntos alguns pontos que podem ser melhorados para que sua API funcione plenamente e com qualidade ainda maior! 🔍🕵️‍♂️
+## 🎯 Pontos Positivos que Merecem Destaque
+
+- **Estrutura modular bem aplicada:**  
+  Você organizou rotas, controllers e repositories em pastas específicas, seguindo o MVC, o que é excelente para projetos Node.js. Isso facilita muito a leitura e manutenção do código.
+
+- **Implementação das rotas principais:**  
+  Os endpoints para `/agentes` e `/casos` estão declarados corretamente nas rotas e conectados no `server.js`. Isso mostra que você compreende o fluxo básico do Express.js.
+
+- **Validações detalhadas nos controllers:**  
+  Você fez um trabalho muito bom validando IDs no formato UUID, campos obrigatórios, tipos dos dados, e até validou datas com mensagens de erro claras. Isso é essencial para uma API robusta.
+
+- **Tratamento de erros personalizado:**  
+  O uso da função `utils.montarResposta` para padronizar as respostas de erro é um ótimo toque para manter a consistência.
+
+- **Implementação dos métodos HTTP:**  
+  Você implementou todos os métodos (GET, POST, PUT, PATCH, DELETE) para os recursos principais, o que é o esperado no desafio.
+
+- **Bônus importantes implementados:**  
+  Mesmo que alguns testes bônus tenham falhado, você tentou implementar filtros por status, busca por palavras-chave, e filtros com ordenação para agentes. Isso é um diferencial que merece reconhecimento! 🌟
 
 ---
 
-## 1. IDs devem ser UUIDs válidos — um ponto fundamental para validação e integridade dos dados
+## 🔍 O que pode ser melhorado (Análise Profunda)
 
-### O que percebi:
-Você está validando IDs para agentes e casos, o que é ótimo, mas pelo que vi no seu código e também pela mensagem de penalidade, os IDs que você está usando para criar agentes e casos **não estão no formato UUID válido**.
+### 1. IDs utilizados **não são UUIDs válidos** (penalidade crítica)
 
-Por exemplo, no seu `agentesController.js`, na função `cadastrarAgente`:
+> **Problema raiz:**  
+> No seu código, os IDs usados para agentes e casos não seguem o formato UUID, e isso impacta diretamente a validação e funcionamento correto da API.
+
+No seu controller, você faz a validação do UUID com a função `utils.verificarUUID()`, que é ótima, mas se os IDs que você está testando não são UUIDs válidos, suas requisições vão falhar. Isso explica os erros em criação e atualização.
+
+**Por exemplo**, no trecho do seu `cadastrarAgente`:
 
 ```js
 if (! utils.verificarUUID(id)) {
@@ -36,163 +56,209 @@ if (! utils.verificarUUID(id)) {
 }
 ```
 
-E o mesmo acontece para casos no `casosController.js`.
+Se o ID enviado não for UUID, o retorno será erro 400. Portanto, seu teste falha porque o ID que você está usando não está no formato correto.
 
-**Porém, a penalidade indica que os IDs usados nos testes ou no seu código não seguem o formato UUID esperado.**
+**Como resolver:**  
+- Gere UUIDs válidos para os IDs dos agentes e casos. Você pode usar a biblioteca `uuid` para isso (instalando com `npm install uuid`) e gerar IDs assim:
 
-### Por que isso é importante:
-O UUID é um padrão para garantir que cada recurso tenha um identificador único universal, evitando colisões e facilitando a busca e manipulação dos dados.
+```js
+const { v4: uuidv4 } = require('uuid');
+const novoId = uuidv4();
+```
 
-Se os IDs não forem UUIDs válidos, o sistema rejeita as requisições com erro 400, e isso bloqueia o funcionamento correto dos seus endpoints.
-
-### O que fazer:
-- Garanta que, ao criar agentes e casos, os IDs sejam strings no formato UUID válido.
-- Se você estiver testando manualmente, use ferramentas para gerar UUIDs (como https://www.uuidgenerator.net/).
-- Caso queira automatizar, pode usar bibliotecas como `uuid` no Node.js para gerar IDs automaticamente.
-
-### Recurso recomendado:
-Para entender melhor UUIDs e validação de dados em APIs, veja este vídeo super didático:
-👉 https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_ (Validação de dados em APIs Node.js/Express)
+- Garanta que, ao criar um agente ou caso, o ID enviado no payload seja um UUID válido.
 
 ---
 
-## 2. Organização da Estrutura do Projeto — está boa, mas atenção a detalhes importantes!
+### 2. Filtros e buscas nos endpoints `/casos` e `/agentes` não estão funcionando corretamente
 
-### O que percebi:
-Sua estrutura de diretórios está muito próxima do esperado, com pastas `routes`, `controllers`, `repositories` e `utils`. Isso é ótimo!
-
-Mas vi que no arquivo `package.json` você não tem um `.gitignore` que exclua a pasta `node_modules`, o que é um problema porque pode deixar seu repositório pesado e com arquivos desnecessários.
-
-### Por que isso é importante:
-O `.gitignore` é fundamental para manter seu repositório limpo, evitando subir arquivos que não precisam ser versionados, como dependências instaladas.
-
-### O que fazer:
-- Crie um arquivo `.gitignore` na raiz do projeto.
-- Adicione pelo menos a linha `node_modules/` para ignorar essa pasta.
-- Isso evita problemas futuros no controle de versão e facilita o trabalho em equipe.
-
-### Recurso recomendado:
-Para entender mais sobre o uso do `.gitignore` e boas práticas em Node.js:
-👉 https://youtu.be/RSZHvQomeKE (Conceitos fundamentais do Node.js e organização de projetos)
-
----
-
-## 3. Implementação dos filtros e buscas — o bônus que você tentou, mas ainda precisa de ajustes
-
-### O que percebi:
-Você implementou filtros por status e agente_id para os casos, além de um endpoint para busca por palavras-chave (`searchCasoByQuery`). Isso é muito legal, pois demonstra iniciativa!
-
-Porém, vários testes bônus relacionados a essas funcionalidades não passaram, indicando que talvez a implementação não esteja 100% alinhada com o esperado.
-
-Por exemplo, no seu `casosController.js`, o filtro por status é assim:
+Você implementou filtros no controller, por exemplo:
 
 ```js
 if (req.query['status']) {
-    casos = casos.filter(  (caso) => (caso.status === req.query.status)  );
+    casos = casos.filter((caso) => (caso.status === req.query.status.toLowerCase()));
 }
 ```
 
-O filtro parece correto, mas verifique se:
+E para agentes:
 
-- Os valores aceitos para `status` são exatamente "aberto" ou "solucionado" (case-sensitive).
-- O filtro está sendo aplicado corretamente mesmo quando outras query strings são passadas.
-- O endpoint `/casos/search` está validando a query string `q` corretamente e retornando uma resposta adequada quando ela não é informada.
+```js
+if (req.query['cargo']) {
+    agentes = agentes.filter((agente) => (agente.cargo === req.query.cargo.toLowerCase()));
+}
+```
 
-### Por que isso é importante:
-Filtros e buscas são essenciais para tornar sua API mais útil e flexível. Além disso, a forma como você trata erros e respostas vazias faz diferença na experiência do cliente da API.
+**Mas percebi que:**
 
-### O que fazer:
-- Teste os filtros manualmente com várias combinações de query strings.
-- Garanta que o endpoint `/casos/search` retorne 400 ou 404 com uma mensagem clara quando a query `q` estiver ausente ou vazia.
-- Considere normalizar strings para evitar problemas de case sensitivity (ex: transformar tudo em minúsculo antes de comparar).
+- Você converte a query para lowercase, mas no filtro não há garantia de que o dado armazenado esteja em lowercase, o que pode levar a filtros que não retornam resultados.
 
-### Recurso recomendado:
-Para entender melhor query params, filtros e tratamento de erros:
-👉 https://youtu.be/--TQwiNIw28 (Manipulação de query strings e middlewares Express)
+- No filtro de agentes por cargo, você compara `agente.cargo === req.query.cargo.toLowerCase()` mas não converte o valor de `agente.cargo` para lowercase antes da comparação. Isso pode causar falhas na filtragem.
+
+**Exemplo de melhoria:**
+
+```js
+agentes = agentes.filter(agente => agente.cargo.toLowerCase() === req.query.cargo.toLowerCase());
+```
+
+Assim, a comparação fica case-insensitive e mais confiável.
 
 ---
 
-## 4. Validação e tratamento de erros — você já faz um bom trabalho, mas pode aprimorar
+### 3. Ordenação por data de incorporação não está funcionando conforme esperado
 
-### O que percebi:
-Você está tratando muitos casos de validação, como IDs inválidos, campos faltantes, formatos de datas, etc. Isso é excelente! 👏
-
-Porém, alguns retornos de status e mensagens podem ser melhorados para seguir as melhores práticas REST, especialmente para os filtros e buscas.
-
-Por exemplo, no seu método `getAllAgentes`:
+No `getAllAgentes`, você tenta ordenar agentes por data:
 
 ```js
-if (agentes) {
-    ...
-    if (agentes) {
-        res.status(200).json(utils.montarResposta(
-            "200",
-            "sucesso",
-            agentes,
-            null));
-    } else {
-        res.status(204).end();
-    }
+if (req.query['sort'] === 'dataDeIncorporacao') {
+    agentes.sort((a, b) => (new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao)));
+} else if (req.query['sort'] === '-dataDeIncorporacao') {
+    agentes.sort((a, b) => (new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao)));
+}
+```
+
+**Aqui está correto, mas...**
+
+- Certifique-se que o campo `dataDeIncorporacao` esteja sempre no formato ISO (YYYY-MM-DD) para que o `new Date()` funcione corretamente.
+
+- Se algum agente tiver data inválida ou vazia, a ordenação pode falhar silenciosamente.
+
+---
+
+### 4. Possível problema no retorno 204 (No Content) quando não há dados
+
+No seu código, você verifica se o array está vazio com:
+
+```js
+if (agentes && agentes != []) {
+    // ...
 } else {
     res.status(204).end();
 }
 ```
 
-Aqui, você verifica `if (agentes)`, mas `agentes` é um array que pode estar vazio, e arrays vazios são truthy em JavaScript. Então, o `else` nunca será executado. Isso pode causar confusão no cliente da API.
-
-### O que fazer:
-- Para verificar se o array está vazio, use `if (agentes.length > 0)` em vez de `if (agentes)`.
-- Retorne `204 No Content` somente quando o array estiver vazio.
-- Isso vale para casos e agentes.
-
-### Recurso recomendado:
-Para entender melhor status HTTP e boas práticas de resposta:
-👉 https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/204 (No Content)
-👉 https://youtu.be/RSZHvQomeKE (Status HTTP e métodos HTTP)
-
----
-
-## 5. Pequenos detalhes que fazem diferença — atenção a nomes e lógica
-
-### Exemplo:
-No `agentesRepository.js`, na função:
+No JavaScript, `[] != []` é sempre `true` porque arrays são objetos diferentes. Para checar se o array está vazio, você deve usar `.length`:
 
 ```js
-function findAgenteInfo(id, campo) {
-    const agente = agentes.findIndex(  (agente) => (agente.id === id)  );
-    return agentes[agente][campo]; // retorna o valor de uma chave especifica de um agente especifico
+if (agentes && agentes.length > 0) {
+    // ...
+} else {
+    res.status(204).end();
 }
 ```
 
-Aqui, você está usando `findIndex` para achar o índice do agente, mas não está validando se o índice é válido (pode ser -1 se não encontrado). Isso pode causar erro ao tentar acessar `agentes[-1]`.
-
-**Dica:** Sempre valide o resultado de `findIndex` antes de acessar o array.
+Isso evita que sua API retorne 204 erroneamente quando há dados.
 
 ---
 
-# Resumo dos pontos principais para focar e melhorar:
+### 5. Pequena inconsistência na função `findAgenteInfo` do repository
 
-- ✅ Continue usando a arquitetura modular com rotas, controllers e repositories — está muito boa!
-- ⚠️ Garanta que os IDs usados para agentes e casos sejam UUIDs válidos.
-- ⚠️ Crie um arquivo `.gitignore` para ignorar a pasta `node_modules`.
-- ⚠️ Revise e teste cuidadosamente os filtros e buscas para que eles funcionem corretamente e retornem os status HTTP apropriados.
-- ⚠️ Ajuste a validação para verificar arrays vazios antes de decidir entre retornar 200 ou 204.
-- ⚠️ Valide resultados de funções como `findIndex` para evitar erros inesperados.
-- ⚠️ Continue aprimorando o tratamento de erros com mensagens claras e status corretos.
+No arquivo `repositories/agentesRepository.js`:
+
+```js
+function findAgenteInfo(id, campo) {
+    const agente = agentes.findIndex((agente) => (agente.id === id));
+    if (agente) {
+        return agentes[agente][campo];
+    } else {
+        return null;
+    }
+}
+```
+
+O problema é que `findIndex` retorna `-1` se não encontrar o índice. E `if (agente)` será falso para índice 0 (primeiro elemento), pois `0` é falsy no JavaScript.
+
+**Correção:**
+
+```js
+if (agente !== -1) {
+    return agentes[agente][campo];
+} else {
+    return null;
+}
+```
+
+Essa mudança garante que o agente na posição 0 também seja considerado válido.
 
 ---
 
-Lucas, você está no caminho certo! 🚀 Cada passo que você dá na construção dessa API é uma vitória e, com esses ajustes, seu projeto vai ficar muito mais robusto e alinhado com as melhores práticas do mercado. Continue firme, revisando, testando e aprendendo! Você tem uma base sólida e só precisa desses ajustes para subir de nível. 💪✨
+### 6. Recomendo reforçar o uso do middleware `express.json()`
 
-Se quiser reforçar os conceitos de API REST, Express.js e validação, recomendo fortemente os vídeos abaixo para te ajudar a consolidar o conhecimento:
+Vi que no seu `server.js` você usa:
 
-- Fundamentos de API REST e Express.js: https://youtu.be/RSZHvQomeKE  
-- Validação de dados em APIs Node.js/Express: https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_  
-- Manipulação de query strings e middlewares Express: https://youtu.be/--TQwiNIw28  
+```js
+app.use(express.json());
+```
 
-Estou aqui para o que precisar! Continue firme e conte comigo nessa jornada! 🚓👮‍♂️💻
+Isso é ótimo! Só fique atento que, para receber dados via `application/json`, esse middleware precisa estar ativo antes das rotas. No seu código está correto, continue assim!
 
-Abraços e até a próxima! 👊😄
+---
+
+## 📚 Recursos para você se aprofundar e corrigir esses pontos
+
+- Para entender melhor o uso de **UUIDs** e como gerar IDs corretos:  
+  https://youtu.be/RSZHvQomeKE (Foca em Express e boas práticas, incluindo IDs)  
+  E para gerar UUIDs no Node.js: https://www.npmjs.com/package/uuid
+
+- Sobre **validação de dados e tratamento de erros HTTP 400 e 404**:  
+  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
+  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
+  Além disso, este vídeo ajuda a entender como validar dados em APIs: https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
+
+- Para melhorar a **manipulação de arrays** (filtros, ordenação, etc):  
+  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
+
+- Para garantir que sua API esteja alinhada com o padrão REST e Express:  
+  https://expressjs.com/pt-br/guide/routing.html  
+  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH (sobre arquitetura MVC)
+
+---
+
+## 🗺️ Sobre a Estrutura do Projeto
+
+Sua estrutura está bem alinhada com o esperado:
+
+```
+.
+├── controllers/
+│   ├── agentesController.js
+│   └── casosController.js
+├── repositories/
+│   ├── agentesRepository.js
+│   └── casosRepository.js
+├── routes/
+│   ├── agentesRoutes.js
+│   └── casosRoutes.js
+├── server.js
+├── package.json
+└── utils/
+    └── errorHandler.js
+```
+
+Parabéns por manter essa organização! Isso é fundamental para projetos Node.js escaláveis.
+
+---
+
+## 📝 Resumo dos Principais Pontos para Focar
+
+- ✅ **Use IDs no formato UUID válido** para agentes e casos. Isso é crucial para passar as validações e garantir integridade dos dados.
+
+- ✅ **Ajuste os filtros para serem case-insensitive**, convertendo tanto o valor armazenado quanto o recebido para lowercase antes da comparação.
+
+- ✅ **Corrija a verificação de arrays vazios usando `.length`** para evitar retornos incorretos de status 204.
+
+- ✅ **Corrija a função `findAgenteInfo` para lidar corretamente com índice 0** (usar `!== -1`).
+
+- ✅ **Confirme que datas estão no formato ISO (YYYY-MM-DD)** para que ordenação e validação funcionem corretamente.
+
+- ✅ **Continue usando middleware `express.json()` antes das rotas** para garantir que o corpo das requisições seja interpretado corretamente.
+
+---
+
+Lucas, você está no caminho certo, mostrando domínio dos conceitos essenciais de API REST com Express.js e Node.js! 🚀 Com esses ajustes, sua API vai ficar muito mais robusta e alinhada com as melhores práticas. Continue praticando e explorando esses conceitos, você está construindo uma base sólida para se tornar um excelente desenvolvedor backend! 💪
+
+Se precisar, volte aos vídeos recomendados para reforçar os conceitos. Estou aqui torcendo pelo seu sucesso! 🍀
+
+Abraços do seu Code Buddy! 🤖❤️
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
