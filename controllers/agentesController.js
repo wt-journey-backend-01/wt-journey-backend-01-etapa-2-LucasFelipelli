@@ -19,10 +19,10 @@ const dataLimiteIncorporacao = '1900-01-01';
 function getAllAgentes(req, res) {
     let agentes = agentesRepository.findAll();
     
-    if (agentes) {
+    if (agentes && agentes != []) {
         if (req.query) {
             if (req.query['cargo']) {
-                agentes = agentes.filter(  (agente) => (agente.cargo === req.query.cargo)  );
+                agentes = agentes.filter(  (agente) => (agente.cargo === req.query.cargo.toLowerCase())  );
             }
             if (req.query['sort']) {
                 if (req.query['sort'] === 'dataDeIncorporacao') { // do mais antigo pro mais novo
@@ -56,7 +56,7 @@ function getAllAgentes(req, res) {
 
 function getAgenteById(req, res) {
     const agenteInfo = agentesRepository.findAgenteById(req.params.id);
-    if (! utils.verificarUUID(req.params.id)) {
+    if (! utils.verificarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -103,7 +103,7 @@ function cadastrarAgente(req, res) {
     
     const {id, nome, dataDeIncorporacao, cargo} = req.body;
 
-    if (! utils.verificarUUID(id)) {
+    if (! utils.verificarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",

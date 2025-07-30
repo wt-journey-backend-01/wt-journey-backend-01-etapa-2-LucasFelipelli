@@ -10,7 +10,11 @@ function findAgenteById(id) {
 
 function findAgenteInfo(id, campo) {
     const agente = agentes.findIndex(  (agente) => (agente.id === id)  );
-    return agentes[agente][campo]; // retorna o valor de uma chave especifica de um agente especifico
+    if (agente) {
+        return agentes[agente][campo]; // retorna o valor de uma chave especifica de um agente especifico
+    } else {
+        return null;
+    }
 }
 
 function pushAgente(agente) {

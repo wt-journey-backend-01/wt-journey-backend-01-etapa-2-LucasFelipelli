@@ -17,13 +17,13 @@ const agentes         = require("../repositories/agentesRepository");
 
 function getAllCasos(req, res) {
     let casos = casosRepository.findAll();
-    if (casos) {
+    if (casos && casos != []) {
         if (req.query) {
             if (req.query['agente_id']) {
                 casos = casos.filter(  (caso) => (caso.agente_id === req.query.agente_id)  );
             }
             if (req.query['status']) {
-                casos = casos.filter(  (caso) => (caso.status === req.query.status)  );
+                casos = casos.filter(  (caso) => (caso.status === req.query.status.toLowerCase())  );
             }
         }
         if (casos) {
@@ -44,7 +44,7 @@ function getAllCasos(req, res) {
 
 function getCasoById(req, res) {
     const casoInfo = casosRepository.findCasoById(req.params.id);
-    if (! utils.verificarUUID(req.params.id)) {
+    if (! utils.verificarUUID(req.params.id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -91,7 +91,7 @@ function criarCaso(req, res) {
     
     const {id, titulo, descricao, status, agente_id} = req.body;
 
-    if (! utils.verificarUUID(id)) {
+    if (! utils.verificarUUID(id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -109,7 +109,7 @@ function criarCaso(req, res) {
         ));
     }
     
-    if (! utils.verificarUUID(agente_id)) {
+    if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -141,7 +141,7 @@ function criarCaso(req, res) {
             "descricao do caso deve ser uma string"
         ));
     }
-    if (status !== "aberto" && status !== "solucionado") {
+    if (status.toLowerCase() !== "aberto" && status.toLowerCase() !== "solucionado") {
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -150,7 +150,7 @@ function criarCaso(req, res) {
         ));
     }
 
-    const caso = casosRepository.createCaso(id, titulo, descricao, status, agente_id);
+    const caso = casosRepository.createCaso(id, titulo, descricao, status.toLowerCase(), agente_id);
     casosRepository.pushCaso(caso);
 
     res.status(201).json(utils.montarResposta(
@@ -201,7 +201,7 @@ function atualizarCasoCompleto(req, res) {
         ));
     }
 
-    if (! utils.verificarUUID(agente_id)) {
+    if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -234,7 +234,7 @@ function atualizarCasoCompleto(req, res) {
             "descricao do caso deve ser uma string"
         ));
     }
-    if (status !== "aberto" && status !== "solucionado") {
+    if (status.toLowerCase() !== "aberto" && status.toLowerCase() !== "solucionado") {
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -247,7 +247,7 @@ function atualizarCasoCompleto(req, res) {
         "id": req.params.id,
         "titulo": titulo,
         "descricao": descricao,
-        "status": status,
+        "status": status.toLowerCase(),
         "agente_id": agente_id
     };
     casosRepository.replaceCaso(req.params.id, casoNovo);
@@ -295,7 +295,7 @@ function atualizarCasoParcial(req, res) {
         ));
     }
     if (agente_id) {
-        if (! utils.verificarUUID(agente_id)) {
+        if (! utils.verificarUUID(agente_id)) { // verifica se id é UUID e se nao for vms enviar erro 400
             return res.status(400).json(utils.montarResposta(
                 "400",
                 "Erro",
@@ -328,7 +328,7 @@ function atualizarCasoParcial(req, res) {
             "descricao do caso deve ser uma string"
         ));
     }
-    if (status && status !== "aberto" && status !== "solucionado") {
+    if (status && status.toLowerCase() !== "aberto" && status.toLowerCase() !== "solucionado") {
         return res.status(400).json(utils.montarResposta(
             "400",
             "Erro",
@@ -340,7 +340,7 @@ function atualizarCasoParcial(req, res) {
     let camposToUpdate = {
         "titulo": titulo,
         "descricao": descricao,
-        "status": status,
+        "status": status.toLowerCase(),
         "agente_id": agente_id
     };
 
@@ -409,9 +409,9 @@ function searchCasoByQuery(req, res) {
     let casos = casosRepository.findAll();
 
     if (req.query.q) {
-        const queryToSearch = req.query.q;
+        const queryToSearch = req.query.q.toLowerCase();
         
-        casos = casos.filter(  (caso) => (  caso.titulo.includes(queryToSearch) || caso.descricao.includes(queryToSearch)  )  );
+        casos = casos.filter(  (caso) => (  caso.titulo.toLowerCase().includes(queryToSearch) || caso.descricao.toLowerCase().includes(queryToSearch)  )  );
 
         res.status(200).json(utils.montarResposta(
             "200",

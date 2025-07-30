@@ -1,4 +1,4 @@
-function verificarUUID(texto) {
+function verificarUUID(texto) { // verifica se texto é UUID
     const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return regexUUID.test(texto);
 }
